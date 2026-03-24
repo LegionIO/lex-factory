@@ -16,12 +16,12 @@ module Legion
             code_blocks = extract_code_blocks(content)
 
             {
-              success:     true,
-              file_path:   file_path,
-              title:       title,
-              sections:    sections,
+              success: true,
+              file_path: file_path,
+              title: title,
+              sections: sections,
               code_blocks: code_blocks,
-              raw:         content
+              raw: content
             }
           rescue StandardError => e
             { success: false, error: e.message }

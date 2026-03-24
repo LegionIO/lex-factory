@@ -1,6 +1,10 @@
 AllCops:
   TargetRubyVersion: 3.4
   NewCops: enable
+  SuggestExtensions: false
+
+Style/Documentation:
+  Enabled: false
 
 Naming/PredicateMethod:
   Enabled: false
@@ -9,3 +13,18 @@ Metrics/BlockLength:
   Exclude:
     - 'spec/**/*'
     - 'lex-factory.gemspec'
+
+Metrics/MethodLength:
+  Max: 20
+
+Metrics/ClassLength:
+  Max: 150
+
+Metrics/AbcSize:
+  Max: 20
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+Metrics/PerceivedComplexity:
+  Max: 10

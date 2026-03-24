@@ -11,9 +11,9 @@ module Legion
                     threshold: Constants::DEFAULT_SATISFACTION_THRESHOLD)
             scores = {
               completeness: clamp(completeness),
-              correctness:  clamp(correctness),
-              quality:      clamp(quality),
-              security:     clamp(security)
+              correctness: clamp(correctness),
+              quality: clamp(quality),
+              security: clamp(security)
             }
 
             aggregate = Constants::SCORE_WEIGHTS.sum do |dimension, weight|
@@ -21,15 +21,15 @@ module Legion
             end
 
             {
-              pass:      aggregate >= threshold,
+              pass: aggregate >= threshold,
               aggregate: aggregate.round(4),
               threshold: threshold,
-              scores:    scores
+              scores: scores
             }
           end
 
           def clamp(value)
-            [[value.to_f, 0.0].max, 1.0].min
+            value.to_f.clamp(0.0, 1.0)
           end
 
           private_class_method :clamp

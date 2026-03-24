@@ -35,7 +35,7 @@ RSpec.describe 'End-to-end factory pipeline' do
 
   it 'runs the full pipeline from spec to delivery' do
     result = Legion::Extensions::Factory::Runners::Factory.run_pipeline(
-      spec_path:  spec_path,
+      spec_path: spec_path,
       output_dir: output_dir
     )
 
@@ -45,24 +45,24 @@ RSpec.describe 'End-to-end factory pipeline' do
 
   it 'persists pipeline state to disk' do
     Legion::Extensions::Factory::Runners::Factory.run_pipeline(
-      spec_path:  spec_path,
+      spec_path: spec_path,
       output_dir: output_dir
     )
 
     state_file = File.join(output_dir, 'pipeline_state.json')
     expect(File.exist?(state_file)).to be true
 
-    state = ::JSON.parse(File.read(state_file), symbolize_names: true)
+    state = JSON.parse(File.read(state_file), symbolize_names: true)
     expect(state[:completed_stages].size).to eq(4)
   end
 
   it 'parses spec requirements correctly' do
     Legion::Extensions::Factory::Runners::Factory.run_pipeline(
-      spec_path:  spec_path,
+      spec_path: spec_path,
       output_dir: output_dir
     )
 
-    state = ::JSON.parse(
+    state = JSON.parse(
       File.read(File.join(output_dir, 'pipeline_state.json')),
       symbolize_names: true
     )
@@ -72,7 +72,7 @@ RSpec.describe 'End-to-end factory pipeline' do
 
   it 'reports status after completion' do
     Legion::Extensions::Factory::Runners::Factory.run_pipeline(
-      spec_path:  spec_path,
+      spec_path: spec_path,
       output_dir: output_dir
     )
 
@@ -83,13 +83,13 @@ RSpec.describe 'End-to-end factory pipeline' do
 
   it 'resumes without re-executing completed stages' do
     Legion::Extensions::Factory::Runners::Factory.run_pipeline(
-      spec_path:  spec_path,
+      spec_path: spec_path,
       output_dir: output_dir
     )
 
     # Second run should detect all stages complete and return immediately
     result = Legion::Extensions::Factory::Runners::Factory.run_pipeline(
-      spec_path:  spec_path,
+      spec_path: spec_path,
       output_dir: output_dir
     )
     expect(result[:success]).to be true

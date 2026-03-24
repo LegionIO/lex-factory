@@ -34,9 +34,9 @@ module Legion
           end
 
           {
-            success:          true,
+            success: true,
             stages_completed: @context[:completed_stages].size,
-            output_dir:       @output_dir
+            output_dir: @output_dir
           }
         rescue StandardError => e
           save_state
@@ -45,9 +45,9 @@ module Legion
 
         def status
           {
-            spec_path:        @spec_path,
-            output_dir:       @output_dir,
-            current_stage:    @context[:current_stage],
+            spec_path: @spec_path,
+            output_dir: @output_dir,
+            current_stage: @context[:current_stage],
             completed_stages: @context[:completed_stages] || []
           }
         end
@@ -59,9 +59,9 @@ module Legion
           ctx[:spec]     = parsed
           ctx[:raw_spec] = Helpers::SpecParser.raw_content(file_path: @spec_path)
           ctx[:discover] = {
-            title:        parsed[:title],
-            sections:     parsed[:sections],
-            code_blocks:  parsed[:code_blocks],
+            title: parsed[:title],
+            sections: parsed[:sections],
+            code_blocks: parsed[:code_blocks],
             requirements: extract_requirements(parsed)
           }
           ctx
@@ -70,7 +70,7 @@ module Legion
         def stage_define(ctx)
           requirements = ctx.dig(:discover, :requirements) || []
           ctx[:define] = {
-            tasks:      requirements.map.with_index(1) { |req, i| { id: i, requirement: req, status: :pending } },
+            tasks: requirements.map.with_index(1) { |req, i| { id: i, requirement: req, status: :pending } },
             task_count: requirements.size
           }
           ctx
@@ -81,7 +81,7 @@ module Legion
           tasks.each { |t| t[:status] = :completed }
           ctx[:develop] = {
             tasks_completed: tasks.size,
-            tasks_failed:    0
+            tasks_failed: 0
           }
           ctx
         end
@@ -93,15 +93,15 @@ module Legion
 
           gate_result = Helpers::QualityGate.score(
             completeness: completeness,
-            correctness:  1.0,
-            quality:      1.0,
-            security:     1.0,
-            threshold:    @threshold
+            correctness: 1.0,
+            quality: 1.0,
+            security: 1.0,
+            threshold: @threshold
           )
 
           ctx[:deliver] = {
             gate_result: gate_result,
-            summary:     "Pipeline complete: #{tasks_completed}/#{tasks_total} tasks"
+            summary: "Pipeline complete: #{tasks_completed}/#{tasks_total} tasks"
           }
           ctx
         end
@@ -144,7 +144,13 @@ module Legion
           ctx.transform_keys(&:to_s).transform_values do |v|
             case v
             when Hash   then serialize_context(v)
-            when Array  then v.map { |e| e.is_a?(Hash) ? serialize_context(e) : (e.is_a?(Symbol) ? e.to_s : e) }
+            when Array  then v.map do |e|
+              if e.is_a?(Hash)
+                serialize_context(e)
+              else
+                (e.is_a?(Symbol) ? e.to_s : e)
+              end
+            end
             when Symbol then v.to_s
             else v
             end

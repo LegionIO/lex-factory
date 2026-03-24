@@ -9,9 +9,9 @@ module Legion
 
           SCORE_WEIGHTS = {
             completeness: 0.35,
-            correctness:  0.35,
-            quality:      0.20,
-            security:     0.10
+            correctness: 0.35,
+            quality: 0.20,
+            security: 0.10
           }.freeze
 
           DEFAULT_SATISFACTION_THRESHOLD = 0.8
