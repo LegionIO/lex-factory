@@ -5,6 +5,7 @@ require_relative 'factory/helpers/constants'
 require_relative 'factory/helpers/spec_parser'
 require_relative 'factory/helpers/quality_gate'
 require_relative 'factory/pipeline_runner'
+require_relative 'factory/runners/factory'
 
 module Legion
   module Extensions
