@@ -6,6 +6,9 @@ AllCops:
 Style/Documentation:
   Enabled: false
 
+Style/RedundantConstantBase:
+  Enabled: false
+
 Naming/PredicateMethod:
   Enabled: false
 

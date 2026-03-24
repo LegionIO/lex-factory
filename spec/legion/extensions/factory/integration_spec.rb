@@ -52,7 +52,7 @@ RSpec.describe 'End-to-end factory pipeline' do
     state_file = File.join(output_dir, 'pipeline_state.json')
     expect(File.exist?(state_file)).to be true
 
-    state = JSON.parse(File.read(state_file), symbolize_names: true)
+    state = ::JSON.parse(File.read(state_file), symbolize_names: true)
     expect(state[:completed_stages].size).to eq(4)
   end
 
@@ -62,7 +62,7 @@ RSpec.describe 'End-to-end factory pipeline' do
       output_dir: output_dir
     )
 
-    state = JSON.parse(
+    state = ::JSON.parse(
       File.read(File.join(output_dir, 'pipeline_state.json')),
       symbolize_names: true
     )
