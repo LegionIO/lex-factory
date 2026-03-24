@@ -3,6 +3,7 @@
 require 'legion/extensions/factory/version'
 require_relative 'factory/helpers/constants'
 require_relative 'factory/helpers/spec_parser'
+require_relative 'factory/helpers/quality_gate'
 
 module Legion
   module Extensions
