@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'legion/extensions/factory/version'
+require_relative 'factory/helpers/constants'
+require_relative 'factory/helpers/spec_parser'
 
 module Legion
   module Extensions
