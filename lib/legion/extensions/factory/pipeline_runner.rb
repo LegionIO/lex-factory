@@ -78,11 +78,14 @@ module Legion
 
         def stage_develop(ctx)
           tasks = ctx.dig(:define, :tasks) || []
-          tasks.each { |t| t[:status] = :completed }
-          ctx[:develop] = {
-            tasks_completed: tasks.size,
-            tasks_failed: 0
-          }
+
+          if codegen_available?
+            develop_with_codegen(ctx, tasks)
+          else
+            tasks.each { |t| t[:status] = :completed }
+            ctx[:develop] = { tasks_completed: tasks.size, tasks_failed: 0, strategy: :stub }
+          end
+
           ctx
         end
 
@@ -104,6 +107,58 @@ module Legion
             summary: "Pipeline complete: #{tasks_completed}/#{tasks_total} tasks"
           }
           ctx
+        end
+
+        def codegen_available?
+          defined?(Legion::Extensions::Codegen::Runners::FromGap) &&
+            Legion::Extensions::Codegen::Runners::FromGap.respond_to?(:generate)
+        end
+
+        def develop_with_codegen(ctx, tasks)
+          counters  = { completed: 0, failed: 0 }
+          artifacts = []
+
+          tasks.each { |task| run_codegen_task(task, counters, artifacts) }
+
+          ctx[:develop] = build_develop_context(ctx, counters, artifacts)
+        end
+
+        def run_codegen_task(task, counters, artifacts)
+          result = Legion::Extensions::Codegen::Runners::FromGap.generate(
+            gap: { id: task[:id], type: :runner_method, intent: task[:requirement] }
+          )
+          apply_task_result(task, result, counters, artifacts)
+        rescue StandardError => e
+          task[:status] = :failed
+          task[:reason] = e.message
+          counters[:failed] += 1
+        end
+
+        def apply_task_result(task, result, counters, artifacts)
+          if result[:success]
+            task[:status]        = :completed
+            task[:generation_id] = result[:generation_id]
+            task[:file_path]     = result[:file_path]
+            artifacts << result
+            counters[:completed] += 1
+          else
+            task[:status] = :failed
+            task[:reason] = result[:reason]
+            counters[:failed] += 1
+          end
+        end
+
+        def build_develop_context(ctx, counters, artifacts)
+          {
+            tasks_completed: counters[:completed],
+            tasks_failed: counters[:failed],
+            strategy: :codegen,
+            spec_title: ctx.dig(:discover, :title) || 'unknown',
+            spec_length: (ctx[:raw_spec] || '').length,
+            artifacts: artifacts.map do |a|
+              { generation_id: a[:generation_id], tier: a[:tier], file_path: a[:file_path] }
+            end
+          }
         end
 
         def extract_requirements(parsed)

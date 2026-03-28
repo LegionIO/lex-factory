@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2] - 2026-03-28
+
+### Changed
+- Implement develop stage via real LLM code generation, delegating to `lex-codegen` `FromGap.generate`
+- Graceful fallback to stub strategy when lex-codegen is not loaded
+- Raise `Metrics/ClassLength` limit to 200 in rubocop config to accommodate new private helpers
+
 ## [0.1.1] - 2026-03-26
 
 ### Changed
