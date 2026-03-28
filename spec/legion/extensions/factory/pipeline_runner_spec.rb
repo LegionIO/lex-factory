@@ -61,7 +61,7 @@ RSpec.describe Legion::Extensions::Factory::PipelineRunner do
         allow_any_instance_of(described_class).to receive(:codegen_available?).and_return(false)
       end
 
-      it 'falls back to stub strategy and marks tasks completed' do
+      it 'falls back to stub strategy and completes all pipeline stages' do
         runner = described_class.new(spec_path: spec_path, output_dir: tmp_dir)
         result = runner.run
         expect(result[:success]).to be true
@@ -150,6 +150,9 @@ RSpec.describe Legion::Extensions::Factory::PipelineRunner do
           state_raw = JSON.parse(File.read(File.join(tmp_dir, 'pipeline_state.json')))
           expect(state_raw.dig('develop', 'tasks_failed')).to eq(1)
           expect(state_raw.dig('develop', 'tasks_completed')).to eq(0)
+          failed_task = state_raw.dig('define', 'tasks')&.find { |t| t['status'] == 'failed' }
+          expect(failed_task).not_to be_nil
+          expect(failed_task['reason']).to eq('llm_unavailable')
         end
 
         it 'still completes the full pipeline' do
@@ -180,8 +183,11 @@ RSpec.describe Legion::Extensions::Factory::PipelineRunner do
         it 'rescues per-task exceptions and marks tasks failed' do
           runner = described_class.new(spec_path: spec_path, output_dir: tmp_dir)
           runner.run
-          state_raw = JSON.parse(File.read(File.join(tmp_dir, 'pipeline_state.json')))
+          pipeline_state_path = File.join(tmp_dir, 'pipeline_state.json')
+          raw_content = File.read(pipeline_state_path)
+          state_raw = JSON.parse(raw_content)
           expect(state_raw.dig('develop', 'tasks_failed')).to eq(1)
+          expect(raw_content).to include('unexpected error')
         end
 
         it 'still completes the full pipeline' do
