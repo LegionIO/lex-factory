@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'json'
+require 'legion/json'
 require 'fileutils'
 
 module Legion
@@ -175,19 +175,21 @@ module Legion
 
         def save_state
           ::FileUtils.mkdir_p(@output_dir)
-          File.write(state_file_path, ::JSON.generate(serialize_context(@context)))
-        rescue StandardError
+          File.write(state_file_path, Legion::JSON.dump(serialize_context(@context)))
+        rescue StandardError => e
+          Legion::Logging.warn "Factory::PipelineRunner#save_state failed: #{e.message}" if defined?(Legion::Logging)
           nil
         end
 
         def load_state
           return default_context unless File.exist?(state_file_path)
 
-          data = ::JSON.parse(File.read(state_file_path), symbolize_names: true)
+          data = Legion::JSON.load(File.read(state_file_path))
           data[:completed_stages] = (data[:completed_stages] || []).map(&:to_sym)
           data[:current_stage] = data[:current_stage]&.to_sym
           data
-        rescue StandardError
+        rescue StandardError => e
+          Legion::Logging.warn "Factory::PipelineRunner#load_state failed: #{e.message}" if defined?(Legion::Logging)
           default_context
         end
 
@@ -216,7 +218,10 @@ module Legion
           return {} unless defined?(Legion::Settings) && !Legion::Settings[:factory].nil?
 
           Legion::Settings[:factory] || {}
-        rescue StandardError
+        rescue StandardError => e
+          if defined?(Legion::Logging)
+            Legion::Logging.debug "Factory::PipelineRunner#factory_settings failed: #{e.message}"
+          end
           {}
         end
       end

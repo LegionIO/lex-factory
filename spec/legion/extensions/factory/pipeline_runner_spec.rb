@@ -72,10 +72,10 @@ RSpec.describe Legion::Extensions::Factory::PipelineRunner do
         File.write(spec_path, "# Test\n\n## Requirements\n\n- Req one\n- Req two\n")
         runner = described_class.new(spec_path: spec_path, output_dir: tmp_dir)
         runner.run
-        state_raw = JSON.parse(File.read(File.join(tmp_dir, 'pipeline_state.json')))
-        expect(state_raw.dig('develop', 'strategy')).to eq('stub')
-        expect(state_raw.dig('develop', 'tasks_completed')).to eq(2)
-        expect(state_raw.dig('develop', 'tasks_failed')).to eq(0)
+        state_raw = Legion::JSON.load(File.read(File.join(tmp_dir, 'pipeline_state.json')))
+        expect(state_raw.dig(:develop, :strategy)).to eq('stub')
+        expect(state_raw.dig(:develop, :tasks_completed)).to eq(2)
+        expect(state_raw.dig(:develop, :tasks_failed)).to eq(0)
       end
     end
 
@@ -110,21 +110,21 @@ RSpec.describe Legion::Extensions::Factory::PipelineRunner do
         File.write(spec_path, "# Test\n\n## Requirements\n\n- Build widget\n")
         runner = described_class.new(spec_path: spec_path, output_dir: tmp_dir)
         runner.run
-        state_raw = JSON.parse(File.read(File.join(tmp_dir, 'pipeline_state.json')))
-        expect(state_raw.dig('develop', 'strategy')).to eq('codegen')
-        expect(state_raw.dig('develop', 'tasks_completed')).to eq(1)
-        expect(state_raw.dig('develop', 'tasks_failed')).to eq(0)
+        state_raw = Legion::JSON.load(File.read(File.join(tmp_dir, 'pipeline_state.json')))
+        expect(state_raw.dig(:develop, :strategy)).to eq('codegen')
+        expect(state_raw.dig(:develop, :tasks_completed)).to eq(1)
+        expect(state_raw.dig(:develop, :tasks_failed)).to eq(0)
       end
 
       it 'records artifacts for each generated task' do
         File.write(spec_path, "# Test\n\n## Requirements\n\n- Build widget\n")
         runner = described_class.new(spec_path: spec_path, output_dir: tmp_dir)
         runner.run
-        state_raw = JSON.parse(File.read(File.join(tmp_dir, 'pipeline_state.json')))
-        artifacts = state_raw.dig('develop', 'artifacts')
+        state_raw = Legion::JSON.load(File.read(File.join(tmp_dir, 'pipeline_state.json')))
+        artifacts = state_raw.dig(:develop, :artifacts)
         expect(artifacts).to be_an(Array)
         expect(artifacts.size).to eq(1)
-        expect(artifacts.first['generation_id']).to eq('gen_1')
+        expect(artifacts.first[:generation_id]).to eq('gen_1')
       end
 
       context 'when FromGap.generate returns failure' do
@@ -147,12 +147,12 @@ RSpec.describe Legion::Extensions::Factory::PipelineRunner do
         it 'marks tasks as failed and records reason' do
           runner = described_class.new(spec_path: spec_path, output_dir: tmp_dir)
           runner.run
-          state_raw = JSON.parse(File.read(File.join(tmp_dir, 'pipeline_state.json')))
-          expect(state_raw.dig('develop', 'tasks_failed')).to eq(1)
-          expect(state_raw.dig('develop', 'tasks_completed')).to eq(0)
-          failed_task = state_raw.dig('define', 'tasks')&.find { |t| t['status'] == 'failed' }
+          state_raw = Legion::JSON.load(File.read(File.join(tmp_dir, 'pipeline_state.json')))
+          expect(state_raw.dig(:develop, :tasks_failed)).to eq(1)
+          expect(state_raw.dig(:develop, :tasks_completed)).to eq(0)
+          failed_task = state_raw.dig(:define, :tasks)&.find { |t| t[:status] == 'failed' }
           expect(failed_task).not_to be_nil
-          expect(failed_task['reason']).to eq('llm_unavailable')
+          expect(failed_task[:reason]).to eq('llm_unavailable')
         end
 
         it 'still completes the full pipeline' do
@@ -185,8 +185,8 @@ RSpec.describe Legion::Extensions::Factory::PipelineRunner do
           runner.run
           pipeline_state_path = File.join(tmp_dir, 'pipeline_state.json')
           raw_content = File.read(pipeline_state_path)
-          state_raw = JSON.parse(raw_content)
-          expect(state_raw.dig('develop', 'tasks_failed')).to eq(1)
+          state_raw = Legion::JSON.load(raw_content)
+          expect(state_raw.dig(:develop, :tasks_failed)).to eq(1)
           expect(raw_content).to include('unexpected error')
         end
 
