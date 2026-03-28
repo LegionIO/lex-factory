@@ -80,10 +80,6 @@ RSpec.describe Legion::Extensions::Factory::PipelineRunner do
     end
 
     context 'when lex-codegen is available' do
-      let(:codegen_success) do
-        { success: true, generation_id: 'gen_abc123', tier: :simple, file_path: '/tmp/gen_abc123.rb' }
-      end
-
       let(:codegen_module) do
         Module.new do
           def self.generate(gap:)
@@ -103,6 +99,7 @@ RSpec.describe Legion::Extensions::Factory::PipelineRunner do
 
       it 'delegates each task to FromGap.generate' do
         File.write(spec_path, "# Test\n\n## Requirements\n\n- Build widget\n- Add tests\n")
+        expect(codegen_module).to receive(:generate).twice.and_call_original
         runner = described_class.new(spec_path: spec_path, output_dir: tmp_dir)
         result = runner.run
         expect(result[:success]).to be true
