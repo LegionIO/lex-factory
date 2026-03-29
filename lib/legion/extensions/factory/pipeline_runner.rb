@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
-require 'json'
+require 'legion/json'
 require 'fileutils'
 
 module Legion
   module Extensions
     module Factory
       class PipelineRunner
+        include Legion::JSON::Helper
+        include Legion::Logging::Helper
+
         attr_reader :spec_path, :output_dir
 
         def initialize(spec_path:, output_dir: nil, threshold: nil, max_retries: nil)
@@ -39,6 +42,7 @@ module Legion
             output_dir: @output_dir
           }
         rescue StandardError => e
+          log.error "PipelineRunner#run failed at stage #{@context[:current_stage]}: #{e.message}"
           save_state
           { success: false, error: e.message, last_stage: @context[:current_stage] }
         end
@@ -78,11 +82,14 @@ module Legion
 
         def stage_develop(ctx)
           tasks = ctx.dig(:define, :tasks) || []
-          tasks.each { |t| t[:status] = :completed }
-          ctx[:develop] = {
-            tasks_completed: tasks.size,
-            tasks_failed: 0
-          }
+
+          if codegen_available?
+            develop_with_codegen(ctx, tasks)
+          else
+            tasks.each { |t| t[:status] = :completed }
+            ctx[:develop] = { tasks_completed: tasks.size, tasks_failed: 0, strategy: :stub }
+          end
+
           ctx
         end
 
@@ -106,6 +113,59 @@ module Legion
           ctx
         end
 
+        def codegen_available?
+          defined?(Legion::Extensions::Codegen::Runners::FromGap) &&
+            Legion::Extensions::Codegen::Runners::FromGap.respond_to?(:generate)
+        end
+
+        def develop_with_codegen(ctx, tasks)
+          counters  = { completed: 0, failed: 0 }
+          artifacts = []
+
+          tasks.each { |task| run_codegen_task(task, counters, artifacts) }
+
+          ctx[:develop] = build_develop_context(ctx, counters, artifacts)
+        end
+
+        def run_codegen_task(task, counters, artifacts)
+          result = Legion::Extensions::Codegen::Runners::FromGap.generate(
+            gap: { id: task[:id], type: :runner_method, intent: task[:requirement] }
+          )
+          apply_task_result(task, result, counters, artifacts)
+        rescue StandardError => e
+          log.error "PipelineRunner#run_codegen_task failed for task #{task[:id]}: #{e.message}"
+          task[:status] = :failed
+          task[:reason] = e.message
+          counters[:failed] += 1
+        end
+
+        def apply_task_result(task, result, counters, artifacts)
+          if result[:success]
+            task[:status]        = :completed
+            task[:generation_id] = result[:generation_id]
+            task[:file_path]     = result[:file_path]
+            artifacts << result
+            counters[:completed] += 1
+          else
+            task[:status] = :failed
+            task[:reason] = result[:reason]
+            counters[:failed] += 1
+          end
+        end
+
+        def build_develop_context(ctx, counters, artifacts)
+          {
+            tasks_completed: counters[:completed],
+            tasks_failed: counters[:failed],
+            strategy: :codegen,
+            spec_title: ctx.dig(:discover, :title) || 'unknown',
+            spec_length: (ctx[:raw_spec] || '').length,
+            artifacts: artifacts.map do |a|
+              { generation_id: a[:generation_id], tier: a[:tier], file_path: a[:file_path] }
+            end
+          }
+        end
+
         def extract_requirements(parsed)
           return [] unless parsed[:success]
 
@@ -120,19 +180,21 @@ module Legion
 
         def save_state
           ::FileUtils.mkdir_p(@output_dir)
-          File.write(state_file_path, ::JSON.generate(serialize_context(@context)))
-        rescue StandardError
+          File.write(state_file_path, json_dump(serialize_context(@context)))
+        rescue StandardError => e
+          log.warn "PipelineRunner#save_state failed: #{e.message}"
           nil
         end
 
         def load_state
           return default_context unless File.exist?(state_file_path)
 
-          data = ::JSON.parse(File.read(state_file_path), symbolize_names: true)
+          data = json_load(File.read(state_file_path))
           data[:completed_stages] = (data[:completed_stages] || []).map(&:to_sym)
           data[:current_stage] = data[:current_stage]&.to_sym
           data
-        rescue StandardError
+        rescue StandardError => e
+          log.warn "PipelineRunner#load_state failed: #{e.message}"
           default_context
         end
 
@@ -161,7 +223,8 @@ module Legion
           return {} unless defined?(Legion::Settings) && !Legion::Settings[:factory].nil?
 
           Legion::Settings[:factory] || {}
-        rescue StandardError
+        rescue StandardError => e
+          log.debug "PipelineRunner#factory_settings failed: #{e.message}"
           {}
         end
       end

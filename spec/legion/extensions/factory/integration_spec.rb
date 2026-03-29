@@ -52,7 +52,7 @@ RSpec.describe 'End-to-end factory pipeline' do
     state_file = File.join(output_dir, 'pipeline_state.json')
     expect(File.exist?(state_file)).to be true
 
-    state = ::JSON.parse(File.read(state_file), symbolize_names: true)
+    state = Legion::JSON.load(File.read(state_file))
     expect(state[:completed_stages].size).to eq(4)
   end
 
@@ -62,10 +62,7 @@ RSpec.describe 'End-to-end factory pipeline' do
       output_dir: output_dir
     )
 
-    state = ::JSON.parse(
-      File.read(File.join(output_dir, 'pipeline_state.json')),
-      symbolize_names: true
-    )
+    state = Legion::JSON.load(File.read(File.join(output_dir, 'pipeline_state.json')))
     # 4 requirements from Requirements section + 3 from Constraints
     expect(state.dig(:define, :task_count)).to be >= 4
   end

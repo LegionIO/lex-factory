@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.2] - 2026-03-28
+
+### Changed
+- Implement develop stage via real LLM code generation, delegating to `lex-codegen` `FromGap.generate`
+- Graceful fallback to stub strategy when lex-codegen is not loaded
+- Exclude `pipeline_runner.rb` from `Metrics/ClassLength` and `Metrics/AbcSize` in rubocop config
+
+## [0.1.1] - 2026-03-26
+
+### Changed
+- fix remote_invocable? to use class method for local dispatch
+
 ## [0.1.0] - 2026-03-24
 
 ### Added
