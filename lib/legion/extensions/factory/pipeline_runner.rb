@@ -42,6 +42,7 @@ module Legion
             output_dir: @output_dir
           }
         rescue StandardError => e
+          log.error "PipelineRunner#run failed at stage #{@context[:current_stage]}: #{e.message}"
           save_state
           { success: false, error: e.message, last_stage: @context[:current_stage] }
         end
@@ -132,6 +133,7 @@ module Legion
           )
           apply_task_result(task, result, counters, artifacts)
         rescue StandardError => e
+          log.error "PipelineRunner#run_codegen_task failed for task #{task[:id]}: #{e.message}"
           task[:status] = :failed
           task[:reason] = e.message
           counters[:failed] += 1

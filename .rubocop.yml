@@ -26,6 +26,8 @@ Metrics/ClassLength:
 
 Metrics/AbcSize:
   Max: 20
+  Exclude:
+    - 'lib/legion/extensions/factory/pipeline_runner.rb'
 
 Metrics/CyclomaticComplexity:
   Max: 10
