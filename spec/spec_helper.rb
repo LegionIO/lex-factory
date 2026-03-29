@@ -45,17 +45,42 @@ module Legion
     def self.info(_msg) = nil
     def self.warn(_msg) = nil
     def self.error(_msg) = nil
+
+    class Logger
+      def initialize(**) = nil
+      def debug(_msg) = nil
+      def info(_msg) = nil
+      def warn(_msg) = nil
+      def error(_msg) = nil
+    end
+
+    module Helper
+      def log
+        @log ||= Legion::Logging::Logger.new
+      end
+    end
   end
 
   module JSON
-    def self.load(str)
+    def self.load(str, symbolize_keys: true) # rubocop:disable Lint/UnusedMethodArgument
       require 'json'
       ::JSON.parse(str, symbolize_names: true)
     end
 
-    def self.dump(obj)
+    def self.dump(object = nil, pretty: false, **kwargs) # rubocop:disable Lint/UnusedMethodArgument
       require 'json'
-      ::JSON.generate(obj)
+      data = object.nil? ? kwargs : object
+      ::JSON.generate(data)
+    end
+
+    module Helper
+      def json_load(string, symbolize_keys: true)
+        Legion::JSON.load(string, symbolize_keys: symbolize_keys)
+      end
+
+      def json_dump(object, pretty: false)
+        Legion::JSON.dump(object, pretty: pretty)
+      end
     end
   end
 end

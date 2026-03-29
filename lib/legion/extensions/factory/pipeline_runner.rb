@@ -7,6 +7,9 @@ module Legion
   module Extensions
     module Factory
       class PipelineRunner
+        include Legion::JSON::Helper
+        include Legion::Logging::Helper
+
         attr_reader :spec_path, :output_dir
 
         def initialize(spec_path:, output_dir: nil, threshold: nil, max_retries: nil)
@@ -175,21 +178,21 @@ module Legion
 
         def save_state
           ::FileUtils.mkdir_p(@output_dir)
-          File.write(state_file_path, Legion::JSON.dump(serialize_context(@context)))
+          File.write(state_file_path, json_dump(serialize_context(@context)))
         rescue StandardError => e
-          Legion::Logging.warn "Factory::PipelineRunner#save_state failed: #{e.message}" if defined?(Legion::Logging)
+          log.warn "PipelineRunner#save_state failed: #{e.message}"
           nil
         end
 
         def load_state
           return default_context unless File.exist?(state_file_path)
 
-          data = Legion::JSON.load(File.read(state_file_path))
+          data = json_load(File.read(state_file_path))
           data[:completed_stages] = (data[:completed_stages] || []).map(&:to_sym)
           data[:current_stage] = data[:current_stage]&.to_sym
           data
         rescue StandardError => e
-          Legion::Logging.warn "Factory::PipelineRunner#load_state failed: #{e.message}" if defined?(Legion::Logging)
+          log.warn "PipelineRunner#load_state failed: #{e.message}"
           default_context
         end
 
@@ -219,9 +222,7 @@ module Legion
 
           Legion::Settings[:factory] || {}
         rescue StandardError => e
-          if defined?(Legion::Logging)
-            Legion::Logging.debug "Factory::PipelineRunner#factory_settings failed: #{e.message}"
-          end
+          log.debug "PipelineRunner#factory_settings failed: #{e.message}"
           {}
         end
       end
