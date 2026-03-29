@@ -62,9 +62,9 @@ module Legion
   end
 
   module JSON
-    def self.load(str, symbolize_keys: true) # rubocop:disable Lint/UnusedMethodArgument
+    def self.load(str, symbolize_keys: true)
       require 'json'
-      ::JSON.parse(str, symbolize_names: true)
+      ::JSON.parse(str, symbolize_names: symbolize_keys)
     end
 
     def self.dump(object = nil, pretty: false, **kwargs) # rubocop:disable Lint/UnusedMethodArgument
