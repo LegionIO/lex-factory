@@ -10,7 +10,7 @@ require_relative 'factory/runners/factory'
 module Legion
   module Extensions
     module Factory
-      extend Legion::Extensions::Core if Legion::Extensions.const_defined?(:Core)
+      extend Legion::Extensions::Core if Legion::Extensions.const_defined?(:Core, false)
 
       class << self
         def data_required?

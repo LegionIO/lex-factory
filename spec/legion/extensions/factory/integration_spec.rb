@@ -35,7 +35,7 @@ RSpec.describe 'End-to-end factory pipeline' do
 
   it 'runs the full pipeline from spec to delivery' do
     result = Legion::Extensions::Factory::Runners::Factory.run_pipeline(
-      spec_path: spec_path,
+      spec_path:  spec_path,
       output_dir: output_dir
     )
 
@@ -45,7 +45,7 @@ RSpec.describe 'End-to-end factory pipeline' do
 
   it 'persists pipeline state to disk' do
     Legion::Extensions::Factory::Runners::Factory.run_pipeline(
-      spec_path: spec_path,
+      spec_path:  spec_path,
       output_dir: output_dir
     )
 
@@ -58,7 +58,7 @@ RSpec.describe 'End-to-end factory pipeline' do
 
   it 'parses spec requirements correctly' do
     Legion::Extensions::Factory::Runners::Factory.run_pipeline(
-      spec_path: spec_path,
+      spec_path:  spec_path,
       output_dir: output_dir
     )
 
@@ -69,7 +69,7 @@ RSpec.describe 'End-to-end factory pipeline' do
 
   it 'reports status after completion' do
     Legion::Extensions::Factory::Runners::Factory.run_pipeline(
-      spec_path: spec_path,
+      spec_path:  spec_path,
       output_dir: output_dir
     )
 
@@ -80,13 +80,13 @@ RSpec.describe 'End-to-end factory pipeline' do
 
   it 'resumes without re-executing completed stages' do
     Legion::Extensions::Factory::Runners::Factory.run_pipeline(
-      spec_path: spec_path,
+      spec_path:  spec_path,
       output_dir: output_dir
     )
 
     # Second run should detect all stages complete and return immediately
     result = Legion::Extensions::Factory::Runners::Factory.run_pipeline(
-      spec_path: spec_path,
+      spec_path:  spec_path,
       output_dir: output_dir
     )
     expect(result[:success]).to be true

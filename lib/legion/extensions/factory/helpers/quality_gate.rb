@@ -11,9 +11,9 @@ module Legion
                     threshold: Constants::DEFAULT_SATISFACTION_THRESHOLD)
             scores = {
               completeness: clamp(completeness),
-              correctness: clamp(correctness),
-              quality: clamp(quality),
-              security: clamp(security)
+              correctness:  clamp(correctness),
+              quality:      clamp(quality),
+              security:     clamp(security)
             }
 
             aggregate = Constants::SCORE_WEIGHTS.sum do |dimension, weight|
@@ -21,10 +21,10 @@ module Legion
             end
 
             {
-              pass: aggregate >= threshold,
+              pass:      aggregate >= threshold,
               aggregate: aggregate.round(4),
               threshold: threshold,
-              scores: scores
+              scores:    scores
             }
           end
 
