@@ -7,7 +7,7 @@ module Legion
         module Factory
           module_function
 
-          def run_pipeline(spec_path:, output_dir: nil)
+          def run_pipeline(spec_path:, output_dir: nil, **)
             return { success: false, error: 'spec file not found' } unless ::File.exist?(spec_path)
 
             runner = PipelineRunner.new(spec_path: spec_path, output_dir: output_dir)
@@ -16,7 +16,7 @@ module Legion
             { success: false, error: e.message }
           end
 
-          def pipeline_status(output_dir:)
+          def pipeline_status(output_dir:, **)
             runner = PipelineRunner.new(spec_path: '', output_dir: output_dir)
             status = runner.status
             { success: true, **status }

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.3] - 2026-03-29
+
+### Changed
+- `run_pipeline` and `pipeline_status` accept `**` for task system payload compatibility
+
 ## [0.1.2] - 2026-03-28
 
 ### Changed
