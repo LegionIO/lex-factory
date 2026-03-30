@@ -37,9 +37,9 @@ module Legion
           end
 
           {
-            success: true,
+            success:          true,
             stages_completed: @context[:completed_stages].size,
-            output_dir: @output_dir
+            output_dir:       @output_dir
           }
         rescue StandardError => e
           log.error "PipelineRunner#run failed at stage #{@context[:current_stage]}: #{e.message}"
@@ -49,9 +49,9 @@ module Legion
 
         def status
           {
-            spec_path: @spec_path,
-            output_dir: @output_dir,
-            current_stage: @context[:current_stage],
+            spec_path:        @spec_path,
+            output_dir:       @output_dir,
+            current_stage:    @context[:current_stage],
             completed_stages: @context[:completed_stages] || []
           }
         end
@@ -63,9 +63,9 @@ module Legion
           ctx[:spec]     = parsed
           ctx[:raw_spec] = Helpers::SpecParser.raw_content(file_path: @spec_path)
           ctx[:discover] = {
-            title: parsed[:title],
-            sections: parsed[:sections],
-            code_blocks: parsed[:code_blocks],
+            title:        parsed[:title],
+            sections:     parsed[:sections],
+            code_blocks:  parsed[:code_blocks],
             requirements: extract_requirements(parsed)
           }
           ctx
@@ -74,7 +74,7 @@ module Legion
         def stage_define(ctx)
           requirements = ctx.dig(:discover, :requirements) || []
           ctx[:define] = {
-            tasks: requirements.map.with_index(1) { |req, i| { id: i, requirement: req, status: :pending } },
+            tasks:      requirements.map.with_index(1) { |req, i| { id: i, requirement: req, status: :pending } },
             task_count: requirements.size
           }
           ctx
@@ -100,15 +100,15 @@ module Legion
 
           gate_result = Helpers::QualityGate.score(
             completeness: completeness,
-            correctness: 1.0,
-            quality: 1.0,
-            security: 1.0,
-            threshold: @threshold
+            correctness:  1.0,
+            quality:      1.0,
+            security:     1.0,
+            threshold:    @threshold
           )
 
           ctx[:deliver] = {
             gate_result: gate_result,
-            summary: "Pipeline complete: #{tasks_completed}/#{tasks_total} tasks"
+            summary:     "Pipeline complete: #{tasks_completed}/#{tasks_total} tasks"
           }
           ctx
         end
@@ -156,11 +156,11 @@ module Legion
         def build_develop_context(ctx, counters, artifacts)
           {
             tasks_completed: counters[:completed],
-            tasks_failed: counters[:failed],
-            strategy: :codegen,
-            spec_title: ctx.dig(:discover, :title) || 'unknown',
-            spec_length: (ctx[:raw_spec] || '').length,
-            artifacts: artifacts.map do |a|
+            tasks_failed:    counters[:failed],
+            strategy:        :codegen,
+            spec_title:      ctx.dig(:discover, :title) || 'unknown',
+            spec_length:     (ctx[:raw_spec] || '').length,
+            artifacts:       artifacts.map do |a|
               { generation_id: a[:generation_id], tier: a[:tier], file_path: a[:file_path] }
             end
           }

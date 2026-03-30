@@ -4,7 +4,7 @@ module Legion
   module Extensions
     module Factory
       module Runners
-        module Factory
+        module Factory # rubocop:disable Legion/Extension/RunnerIncludeHelpers
           module_function
 
           def run_pipeline(spec_path:, output_dir: nil, **)
